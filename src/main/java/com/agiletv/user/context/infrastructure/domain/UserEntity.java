@@ -1,0 +1,36 @@
+package com.agiletv.user.context.infrastructure.domain;
+
+import com.agiletv.user.context.model.Gender;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Entity
+@Table(name = "users")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserEntity {
+    @Id
+    @Column(name = "username", unique = true, nullable = false, updatable = false)
+    private String username;
+    @Column(name = "name", nullable = false)
+    private String name;
+    @Column(name = "email", nullable = false)
+    private String email;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
+    @Embedded
+    @Column(name = "location")
+    private LocationEntity location;
+    @Column(name = "url_photo")
+    private String urlPhoto;
+}
