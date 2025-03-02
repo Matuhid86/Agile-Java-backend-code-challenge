@@ -1,14 +1,14 @@
 package com.agiletv.user.context.infrastructure.service;
 
-import com.agiletv.user.app.exception.InternalErrorException;
-import com.agiletv.user.context.infrastructure.exception.RandomUserGenerateServiceException;
-import com.agiletv.user.context.model.dto.LocationDto;
-import com.agiletv.user.context.model.dto.RandomUserGenerateDto;
-import com.agiletv.user.context.model.dto.RandomUserGenerateLocationDto;
-import com.agiletv.user.context.model.dto.RandomUserGenerateLoginDto;
-import com.agiletv.user.context.model.dto.RandomUserGenerateNameDto;
-import com.agiletv.user.context.model.dto.RandomUserGeneratePictureDto;
-import com.agiletv.user.context.model.dto.UserDto;
+import com.agiletv.user.context.infrastructure.exception.UserGeneratorServiceException;
+import com.agiletv.user.context.model.LocationDto;
+import com.agiletv.user.context.model.UserGeneratorDto;
+import com.agiletv.user.context.model.UserGeneratorLocationDto;
+import com.agiletv.user.context.model.UserGeneratorLoginDto;
+import com.agiletv.user.context.model.UserGeneratorNameDto;
+import com.agiletv.user.context.model.UserGeneratorPictureDto;
+import com.agiletv.user.context.model.UserDto;
+import com.agiletv.user.context.service.UserGeneratorService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RandomUserGenerateService {
+public class RandomUserGenerateService implements UserGeneratorService {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private final String apiUrl;
 
@@ -32,8 +32,8 @@ public class RandomUserGenerateService {
         this.apiUrl = apiUrl;
     }
 
-    public List<UserDto> generateUsers(Integer quantityUsersToGenerate) throws InternalErrorException {
-        List<RandomUserGenerateDto> randomUserGenerateDtos = new ArrayList<>();
+    public List<UserDto> generateUsers(Integer quantityUsersToGenerate) throws UserGeneratorServiceException {
+        List<UserGeneratorDto> userGeneratorDtos = new ArrayList<>();
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
@@ -42,53 +42,57 @@ public class RandomUserGenerateService {
                                          .build();
 
         try {
-            for (int i = 0; i < quantityUsersToGenerate; i++) {
+            while(userGeneratorDtos.size() < quantityUsersToGenerate) {
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
                 if (response.statusCode() == 200) {
                     JsonNode rootNode = MAPPER.readTree(response.body());
                     JsonNode resultsNode = rootNode.path("results");
 
-                    randomUserGenerateDtos.addAll(MAPPER.readValue(
-                            resultsNode.toString(),
-                            new TypeReference<List<RandomUserGenerateDto>>() {}
-                    ));
+                    List<UserGeneratorDto> users = MAPPER.readValue(resultsNode.toString(), new TypeReference<>() {});
+
+                    for (UserGeneratorDto user : users) {
+                        userGeneratorDtos.add(user);
+                        if (userGeneratorDtos.size() == quantityUsersToGenerate) {
+                            break;
+                        }
+                    }
                 }
                 else {
-                    throw new RandomUserGenerateServiceException(response.body());
+                    throw new UserGeneratorServiceException(response.body());
                 }
             }
         } catch (Exception e) {
-            throw new InternalErrorException(e);
+            throw new UserGeneratorServiceException(e);
         }
 
-        return getUsers(randomUserGenerateDtos);
+        return getUsers(userGeneratorDtos);
     }
 
-    private List<UserDto> getUsers(List<RandomUserGenerateDto> randomUserGenerateDtos) {
+    private List<UserDto> getUsers(List<UserGeneratorDto> userGeneratorDtos) {
         List<UserDto> users = new ArrayList<>();
 
-        randomUserGenerateDtos.forEach(user -> users.add(UserDto.builder()
-                                                            .email(user.getEmail())
-                                                            .name(this.getName(user.getName()))
-                                                            .gender(user.getGender())
-                                                            .username(this.getUsername(user.getLogin()))
-                                                            .location(this.getLocation(user.getLocation()))
-                                                            .urlPhoto(this.getUrlPhoto(user.getPicture()))
-                                                                .build()));
+        userGeneratorDtos.forEach(user -> users.add(UserDto.builder()
+                                                           .email(user.getEmail())
+                                                           .name(this.getName(user.getName()))
+                                                           .gender(user.getGender())
+                                                           .username(this.getUsername(user.getLogin()))
+                                                           .location(this.getLocation(user.getLocation()))
+                                                           .urlPhoto(this.getUrlPhoto(user.getPicture()))
+                                                           .build()));
 
         return users;
     }
 
-    private String getName(RandomUserGenerateNameDto name) {
+    private String getName(UserGeneratorNameDto name) {
         return Objects.isNull(name) ? null : String.format("%s %s", name.getFirst(), name.getLast());
     }
 
-    private String getUsername(RandomUserGenerateLoginDto login) {
+    private String getUsername(UserGeneratorLoginDto login) {
         return Objects.isNull(login) ? null : login.getUsername();
     }
 
-    private LocationDto getLocation(RandomUserGenerateLocationDto location) {
+    private LocationDto getLocation(UserGeneratorLocationDto location) {
         return Objects.isNull(location) ? null :
                LocationDto.builder()
                           .city(location.getCity())
@@ -97,7 +101,7 @@ public class RandomUserGenerateService {
                           .build();
     }
 
-    private String getUrlPhoto(RandomUserGeneratePictureDto picture) {
+    private String getUrlPhoto(UserGeneratorPictureDto picture) {
         return Objects.isNull(picture) ? null :
                !Strings.isEmpty(picture.getThumbnail()) ? picture.getThumbnail() :
                !Strings.isEmpty(picture.getLarge()) ? picture.getLarge() : picture.getMedium();

@@ -1,4 +1,4 @@
-package com.agiletv.user.context.infrastructure.repository;
+package com.agiletv.user.context.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

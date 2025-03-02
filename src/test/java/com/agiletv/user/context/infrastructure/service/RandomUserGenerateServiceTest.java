@@ -4,8 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.agiletv.user.app.config.TestConfig;
-import com.agiletv.user.app.exception.InternalErrorException;
-import com.agiletv.user.context.model.dto.UserDto;
+import com.agiletv.user.context.infrastructure.exception.UserGeneratorServiceException;
+import com.agiletv.user.context.model.UserDto;
+import com.agiletv.user.context.service.UserGeneratorService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +16,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 class RandomUserGenerateServiceTest {
 
     @Autowired
-    private RandomUserGenerateService service;
+    private UserGeneratorService service;
 
     @Test
-    void generateUsersTest() throws InternalErrorException {
+    void generateUsersTest() throws UserGeneratorServiceException {
         Integer quantityUsersToGenerate = 2;
         List<UserDto> users = service.generateUsers(quantityUsersToGenerate);
 

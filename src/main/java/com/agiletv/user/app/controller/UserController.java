@@ -3,10 +3,11 @@ package com.agiletv.user.app.controller;
 import com.agiletv.user.app.exception.BadRequestException;
 import com.agiletv.user.app.exception.InternalErrorException;
 import com.agiletv.user.app.exception.NotFoundException;
-import com.agiletv.user.context.infrastructure.service.RandomUserGenerateService;
+import com.agiletv.user.context.infrastructure.exception.UserGeneratorServiceException;
 import com.agiletv.user.context.infrastructure.service.UserService;
-import com.agiletv.user.context.model.dto.PagedResultDto;
-import com.agiletv.user.context.model.dto.UserDto;
+import com.agiletv.user.context.model.PagedResultDto;
+import com.agiletv.user.context.model.UserDto;
+import com.agiletv.user.context.service.UserGeneratorService;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 	@Autowired
-	private RandomUserGenerateService randomUserGenerateService;
+	private UserGeneratorService userGeneratorService;
 
 	@GetMapping
 	PagedResultDto<UserDto> getAll(
@@ -63,13 +64,17 @@ public class UserController {
 
 	@GetMapping("/generate/{number}")
 	List<UserDto> generate(@PathVariable Integer number) throws InternalErrorException, BadRequestException {
-		List<UserDto> users = randomUserGenerateService.generateUsers(number);
+		try {
+			List<UserDto> users = userGeneratorService.generateUsers(number);
 
-		for(UserDto user : users) {
-			userService.create(user);
+			for (UserDto user : users) {
+				userService.create(user);
+			}
+
+			return users;
+		} catch (UserGeneratorServiceException ex) {
+			throw new InternalErrorException(ex);
 		}
-
-		return users;
 	}
 
 	@GetMapping("/tree")

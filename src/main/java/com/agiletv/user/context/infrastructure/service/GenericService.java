@@ -1,8 +1,8 @@
 package com.agiletv.user.context.infrastructure.service;
 
 import com.agiletv.user.app.exception.NotFoundException;
-import com.agiletv.user.context.infrastructure.mapper.GenericMapper;
-import com.agiletv.user.context.infrastructure.repository.GenericRepository;
+import com.agiletv.user.context.mapper.GenericMapper;
+import com.agiletv.user.context.repository.GenericRepository;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;

@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@EnableJpaRepositories(basePackages = "com.agiletv.user.context.infrastructure.repository")
+@EnableJpaRepositories(basePackages = "com.agiletv.user.context.repository")
 @ComponentScan(basePackages = "com.agiletv.user")
 @EntityScan(basePackages = "com.agiletv.user.context.infrastructure.domain")
 public class TestConfig { }

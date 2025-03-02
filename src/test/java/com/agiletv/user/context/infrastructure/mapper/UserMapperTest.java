@@ -6,7 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.agiletv.user.app.config.TestConfig;
 import com.agiletv.user.context.infrastructure.domain.UserEntity;
-import com.agiletv.user.context.model.dto.UserDto;
+import com.agiletv.user.context.mapper.UserMapper;
+import com.agiletv.user.context.model.UserDto;
 import java.util.ArrayList;
 import java.util.List;
 import org.jeasy.random.EasyRandom;
